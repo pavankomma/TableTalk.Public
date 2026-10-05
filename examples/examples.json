@@ -1,0 +1,42 @@
+[
+  {
+    "question": "What was total net revenue in 2025?",
+    "sql": "SELECT ROUND(SUM(oi.quantity * oi.unit_price * (1 - oi.discount_pct)), 2) AS net_revenue FROM order_items oi JOIN orders o ON o.order_id = oi.order_id WHERE o.status NOT IN ('cancelled', 'returned') AND o.order_date BETWEEN '2025-01-01' AND '2025-12-31'",
+    "source": "human"
+  },
+  {
+    "question": "Monthly order count for the last 6 months",
+    "sql": "SELECT strftime('%Y-%m', order_date) AS month, COUNT(*) AS orders FROM orders WHERE order_date > date('2026-09-30', '-6 months') GROUP BY month ORDER BY month",
+    "source": "human"
+  },
+  {
+    "question": "Top 10 customers by lifetime spend",
+    "sql": "SELECT c.customer_id, c.full_name, ROUND(SUM(oi.quantity * oi.unit_price * (1 - oi.discount_pct)), 2) AS lifetime_spend FROM customers c JOIN orders o ON o.customer_id = c.customer_id JOIN order_items oi ON oi.order_id = o.order_id WHERE o.status NOT IN ('cancelled', 'returned') GROUP BY c.customer_id, c.full_name ORDER BY lifetime_spend DESC LIMIT 10",
+    "source": "human"
+  },
+  {
+    "question": "Which product category has the highest return rate?",
+    "sql": "SELECT cat.name AS category, ROUND(100.0 * COUNT(DISTINCT CASE WHEN o.status = 'returned' THEN o.order_id END) / COUNT(DISTINCT o.order_id), 1) AS return_rate_pct FROM categories cat JOIN products p ON p.category_id = cat.category_id JOIN order_items oi ON oi.product_id = p.product_id JOIN orders o ON o.order_id = oi.order_id GROUP BY cat.name ORDER BY return_rate_pct DESC",
+    "source": "human"
+  },
+  {
+    "question": "How many support tickets are still open, by priority?",
+    "sql": "SELECT priority, COUNT(*) AS open_tickets FROM support_tickets WHERE status IN ('open', 'pending') GROUP BY priority ORDER BY CASE priority WHEN 'urgent' THEN 1 WHEN 'high' THEN 2 WHEN 'medium' THEN 3 ELSE 4 END",
+    "source": "human"
+  },
+  {
+    "question": "Average ticket resolution time in hours by topic",
+    "sql": "SELECT topic, ROUND(AVG((julianday(closed_at) - julianday(opened_at)) * 24), 1) AS avg_hours_to_resolve FROM support_tickets WHERE status = 'resolved' GROUP BY topic ORDER BY avg_hours_to_resolve DESC",
+    "source": "human"
+  },
+  {
+    "question": "Which sales reps sold the most in 2026 so far?",
+    "sql": "SELECT r.rep_id, r.full_name, ROUND(SUM(oi.quantity * oi.unit_price * (1 - oi.discount_pct)), 2) AS revenue FROM sales_reps r JOIN orders o ON o.rep_id = r.rep_id JOIN order_items oi ON oi.order_id = o.order_id WHERE o.status NOT IN ('cancelled', 'returned') AND o.order_date >= '2026-01-01' GROUP BY r.rep_id, r.full_name ORDER BY revenue DESC LIMIT 10",
+    "source": "human"
+  },
+  {
+    "question": "Revenue share by sales channel",
+    "sql": "SELECT o.channel, ROUND(SUM(oi.quantity * oi.unit_price * (1 - oi.discount_pct)), 2) AS revenue, ROUND(100.0 * SUM(oi.quantity * oi.unit_price * (1 - oi.discount_pct)) / SUM(SUM(oi.quantity * oi.unit_price * (1 - oi.discount_pct))) OVER (), 1) AS share_pct FROM orders o JOIN order_items oi ON oi.order_id = o.order_id WHERE o.status NOT IN ('cancelled', 'returned') GROUP BY o.channel ORDER BY revenue DESC",
+    "source": "human"
+  }
+]

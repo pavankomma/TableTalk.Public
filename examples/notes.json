@@ -1,0 +1,26 @@
+[
+  {
+    "text": "Revenue is never stored on orders. Line revenue = order_items.quantity * order_items.unit_price * (1 - order_items.discount_pct). Net revenue excludes orders whose status is 'cancelled' or 'returned'; gross revenue includes returned orders but still excludes cancelled ones. 'Units sold' follows the net rule: SUM(order_items.quantity) over orders that are neither cancelled nor returned.",
+    "table": "order_items"
+  },
+  {
+    "text": "The dataset's 'today' is 2026-09-30 (the last order date). For relative periods like 'last 90 days', 'this year' or 'last quarter', anchor on date('2026-09-30'), not date('now'). Last quarter = 2026-04-01..2026-06-30; the current quarter is 2026-07-01..2026-09-30.",
+    "table": "orders"
+  },
+  {
+    "text": "orders.rep_id is NULL for self-serve web/mobile orders. Only store orders and Enterprise-customer orders have a sales rep, so rep leaderboards cover a subset of all revenue.",
+    "table": "orders"
+  },
+  {
+    "text": "A support ticket is 'open' when support_tickets.status is 'open' or 'pending'; closed_at is NULL for those. Resolution time = closed_at - opened_at for status = 'resolved'.",
+    "table": "support_tickets"
+  },
+  {
+    "text": "An 'active customer' is one with at least one non-cancelled order in the 12 months before 2026-09-30. products.is_active = 0 marks discontinued products, which stopped selling after 2025-06-30.",
+    "table": "customers"
+  },
+  {
+    "text": "products.list_price is the catalog price; order_items.unit_price is what was actually charged and can differ by +/-10%. Use order_items.unit_price for anything about sales.",
+    "table": "products"
+  }
+]

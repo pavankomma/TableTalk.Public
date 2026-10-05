@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TableTalk Feed Editor</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M8 2 H24 Q31 2 31 9 V16 Q31 23 24 23 H15 L7 30 V23 Q1 23 1 16 V9 Q1 2 8 2 Z' fill='%235980a6'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/admin/industry.css">
+<script src="/admin/vue.global.prod.js"></script>
+<style>
+  /* Page layout only — every color, font, space and radius comes from the
+     Industry tokens in industry.css. */
+  .wrap { max-width: 1100px; margin: 0 auto; padding: var(--space-6) var(--space-4) 80px; }
+  .toolbar { display: flex; gap: var(--space-2); flex-wrap: wrap; align-items: center;
+             margin: var(--space-4) 0 var(--space-3); }
+  .toolbar input[type=search] { flex: 1; min-width: 180px; }
+  .counts { font-size: 13px; }
+  .tablewrap { margin-top: var(--space-4); }
+  .qid { font-size: 11px; color: color-mix(in srgb, var(--color-text) 50%, transparent);
+         margin-top: var(--space-1); }
+  .sql, pre.schemacard {
+    font-family: ui-monospace, Consolas, monospace; font-size: 12px; line-height: 1.5;
+    background: var(--color-surface); border: 1px solid var(--color-divider);
+    padding: var(--space-2) var(--space-3); margin: var(--space-1) 0 0;
+    white-space: pre-wrap; word-break: break-word;
+  }
+  details summary { cursor: pointer; font-size: 12px;
+                    color: color-mix(in srgb, var(--color-text) 55%, transparent); }
+  .editor { display: grid; gap: var(--space-2); }
+  .editor .row { display: flex; gap: var(--space-2); }
+  .actions-cell { display: flex; gap: var(--space-1); }
+  .danger.armed { background: var(--color-accent-700); border-color: var(--color-accent-700);
+                  color: var(--color-bg); }
+  .toast {
+    position: fixed; bottom: var(--space-6); left: 50%; transform: translateX(-50%);
+    background: var(--color-accent-900); color: var(--color-bg);
+    padding: var(--space-2) var(--space-4); font-size: 13px;
+    box-shadow: var(--shadow-lg); z-index: 10;
+  }
+  .toast.err { background: var(--color-accent-700); }
+  .empty { text-align: center; padding: var(--space-8);
+           color: color-mix(in srgb, var(--color-text) 55%, transparent); }
+  .addrow { margin-top: var(--space-3); padding: var(--space-3); }
+</style>
+</head>
+<body>
+<div id="app" class="wrap">
+  <header class="nav" style="padding-inline:0">
+    <h2 class="nav-brand" style="font-size:32px">TableTalk <span style="color:var(--color-accent)">feed editor</span></h2>
+    <span class="counts text-muted">{{ counts.schema }} schema cards · {{ counts.example }} examples · {{ counts.note }} notes</span>
+  </header>
+
+  <div class="toolbar">
+    <div class="seg" role="radiogroup" aria-label="Filter by type">
+      <label class="seg-opt"><input type="radio" value="all" v-model="filter">All</label>
+      <label class="seg-opt"><input type="radio" value="schema" v-model="filter">Schema</label>
+      <label class="seg-opt"><input type="radio" value="example" v-model="filter">Examples</label>
+      <label class="seg-opt"><input type="radio" value="note" v-model="filter">Notes</label>
+    </div>
+    <input type="search" class="input" v-model="query" placeholder="Search the feed…" style="width:auto">
+    <button class="btn btn-secondary" @click="startAdd('example')">+ Example</button>
+    <button class="btn btn-secondary" @click="startAdd('note')">+ Note</button>
+    <button class="btn btn-primary" :disabled="busy" @click="sync">Sync schema from DB</button>
+    <button class="btn btn-secondary" :disabled="busy" @click="rebuild">Rebuild feed</button>
+  </div>
+  <p class="text-muted" style="font-size:13px">Changed the database? <b>Sync</b> re-introspects
+  every table: updated cards are refreshed and removed tables are dropped. Schema cards are
+  generated from the DB, so they are read-only here. Examples and notes are editable; every
+  change persists to both JSON and Chroma.</p>
+
+  <div v-if="adding" class="blueprint addrow">
+    <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+    <div class="editor" v-if="adding==='example'">
+      <span class="tag tag-accent" style="align-self:start">new example</span>
+      <div class="field"><label>Question</label>
+        <textarea class="input" rows="2" v-model="draft.question"></textarea></div>
+      <div class="field"><label>SQL</label>
+        <textarea class="input" rows="4" v-model="draft.sql"></textarea></div>
+      <div class="row">
+        <button class="btn btn-primary" :disabled="busy" @click="saveAdd">Save</button>
+        <button class="btn btn-secondary" @click="adding=null">Cancel</button>
+      </div>
+    </div>
+    <div class="editor" v-else>
+      <span class="tag tag-outline" style="align-self:start">new note</span>
+      <div class="field"><label>Note text</label>
+        <textarea class="input" rows="3" v-model="draft.text"></textarea></div>
+      <div class="field"><label>Table (optional)</label>
+        <input class="input" v-model="draft.table"></div>
+      <div class="row">
+        <button class="btn btn-primary" :disabled="busy" @click="saveAdd">Save</button>
+        <button class="btn btn-secondary" @click="adding=null">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="blueprint tablewrap" v-if="filtered.length">
+    <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+    <table class="table">
+      <thead><tr><th style="width:110px">Type</th><th>Content</th><th style="width:160px">Actions</th></tr></thead>
+      <tbody>
+        <tr v-for="e in filtered" :key="e.id">
+          <td>
+            <span class="tag" :class="{'tag-neutral': e.type==='schema',
+                                       'tag-accent': e.type==='example',
+                                       'tag-outline': e.type==='note'}">{{ e.type }}</span>
+            <span class="tag tag-accent-2" v-if="e.type==='example' && e.metadata.source==='auto'"
+                  title="captured automatically by the learning loop — approve to rank it with human examples">auto</span>
+            <div class="qid">{{ e.id }}</div>
+          </td>
+          <td>
+            <template v-if="editingId === e.id">
+              <div class="editor" v-if="e.type==='example'">
+                <div class="field"><label>Question</label>
+                  <textarea class="input" rows="2" v-model="draft.question"></textarea></div>
+                <div class="field"><label>SQL</label>
+                  <textarea class="input" rows="4" v-model="draft.sql"></textarea></div>
+                <div class="row">
+                  <button class="btn btn-primary" :disabled="busy" @click="saveEdit(e)">Save</button>
+                  <button class="btn btn-secondary" @click="editingId=null">Cancel</button>
+                </div>
+              </div>
+              <div class="editor" v-else>
+                <div class="field"><label>Note text</label>
+                  <textarea class="input" rows="3" v-model="draft.text"></textarea></div>
+                <div class="field"><label>Table (optional)</label>
+                  <input class="input" v-model="draft.table"></div>
+                <div class="row">
+                  <button class="btn btn-primary" :disabled="busy" @click="saveEdit(e)">Save</button>
+                  <button class="btn btn-secondary" @click="editingId=null">Cancel</button>
+                </div>
+              </div>
+            </template>
+            <template v-else>
+              <template v-if="e.type==='schema'">
+                <b>{{ firstLine(e.content).replace('Table: ','') }}</b>
+                <details><summary>schema card</summary><pre class="schemacard">{{ e.content }}</pre></details>
+              </template>
+              <template v-else-if="e.type==='example'">
+                <b>{{ e.content }}</b>
+                <div class="sql">{{ e.metadata.sql }}</div>
+              </template>
+              <template v-else>
+                {{ e.content }}
+                <div class="qid" v-if="e.metadata.table">table: {{ e.metadata.table }}</div>
+              </template>
+            </template>
+          </td>
+          <td>
+            <template v-if="e.type==='schema'">
+              <span class="text-muted" style="font-size:12px">read-only (use Sync)</span>
+            </template>
+            <button class="btn btn-secondary" v-if="e.type==='example' && e.metadata.source==='auto'"
+                    :disabled="busy" @click="approve(e)">Approve</button>
+            <template v-else-if="editingId !== e.id">
+              <div class="actions-cell">
+                <button class="btn btn-ghost" @click="startEdit(e)">Edit</button>
+                <button class="btn btn-ghost danger" :class="{armed: confirmId===e.id}"
+                        @click="del(e)">{{ confirmId===e.id ? 'Confirm?' : 'Delete' }}</button>
+              </div>
+            </template>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div v-else class="empty">Nothing matches. Try another filter, or run <b>ingest</b> first.</div>
+
+  <div v-if="toast" class="toast" :class="{err: toastErr}">{{ toast }}</div>
+</div>
+
+<script>
+const { createApp } = Vue;
+createApp({
+  data: () => ({
+    entries: [], filter: 'all', query: '', busy: false,
+    editingId: null, adding: null, confirmId: null,
+    draft: {}, toast: '', toastErr: false,
+  }),
+  computed: {
+    counts() {
+      const c = { schema: 0, example: 0, note: 0 };
+      this.entries.forEach(e => { if (c[e.type] !== undefined) c[e.type]++; });
+      return c;
+    },
+    filtered() {
+      const q = this.query.toLowerCase();
+      return this.entries.filter(e =>
+        (this.filter === 'all' || e.type === this.filter) &&
+        (!q || e.content.toLowerCase().includes(q) ||
+         JSON.stringify(e.metadata).toLowerCase().includes(q)));
+    },
+  },
+  methods: {
+    firstLine: (s) => (s || '').split('\n')[0],
+    say(msg, err = false) {
+      this.toast = msg; this.toastErr = err;
+      clearTimeout(this._t); this._t = setTimeout(() => this.toast = '', 3500);
+    },
+    async api(path, opts) {
+      this.busy = true;
+      try {
+        const r = await fetch(path, opts);
+        if (!r.ok) throw new Error((await r.json()).detail || r.statusText);
+        return await r.json();
+      } finally { this.busy = false; }
+    },
+    async load() {
+      const d = await this.api('/api/feed');
+      this.entries = d.entries;
+    },
+    startAdd(kind) {
+      this.adding = kind; this.editingId = null;
+      this.draft = kind === 'example' ? { question: '', sql: '' } : { text: '', table: '' };
+    },
+    startEdit(e) {
+      this.adding = null; this.editingId = e.id; this.confirmId = null;
+      this.draft = e.type === 'example'
+        ? { question: e.content, sql: e.metadata.sql || '' }
+        : { text: e.content, table: e.metadata.table || '' };
+    },
+    async saveAdd() {
+      try {
+        await this.api(`/api/feed/${this.adding}`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(this.draft),
+        });
+        this.adding = null; await this.load(); this.say('Added.');
+      } catch (e) { this.say(e.message, true); }
+    },
+    async saveEdit(entry) {
+      try {
+        await this.api(`/api/feed/${entry.type}`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...this.draft, replace_id: entry.id }),
+        });
+        this.editingId = null; await this.load(); this.say('Saved.');
+      } catch (e) { this.say(e.message, true); }
+    },
+    async approve(e) {
+      try {
+        await this.api('/api/feed/example', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ question: e.content, sql: e.metadata.sql, source: 'human', replace_id: e.id }),
+        });
+        await this.load(); this.say('Approved — now ranked as a human-confirmed example.');
+      } catch (err) { this.say(err.message, true); }
+    },
+    async del(e) {
+      if (this.confirmId !== e.id) { this.confirmId = e.id; return; }
+      this.confirmId = null;
+      try {
+        await this.api(`/api/feed/${encodeURIComponent(e.id)}`, { method: 'DELETE' });
+        await this.load(); this.say('Deleted.');
+      } catch (err) { this.say(err.message, true); }
+    },
+    async sync() {
+      try {
+        const d = await this.api('/api/feed/sync', { method: 'POST' });
+        await this.load();
+        this.say(`Schema synced: ${d.synced} cards refreshed, ${d.removed} removed.`);
+      } catch (e) { this.say(e.message, true); }
+    },
+    async rebuild() {
+      try {
+        const d = await this.api('/api/feed/rebuild', { method: 'POST' });
+        await this.load();
+        this.say(`Rebuilt: ${d.schema} schema, ${d.examples} examples, ${d.notes} notes.`);
+      } catch (e) { this.say(e.message, true); }
+    },
+  },
+  mounted() { this.load().catch(e => this.say(e.message, true)); },
+}).mount('#app');
+</script>
+</body>
+</html>

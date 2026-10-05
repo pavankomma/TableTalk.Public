@@ -1,0 +1,206 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" width="1200" height="900" font-family="Inter, 'Segoe UI', system-ui, -apple-system, sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#475569"/>
+    </marker>
+    <marker id="arrBlue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arrRed" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#dc2626"/>
+    </marker>
+    <marker id="arrGreen" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#16a34a"/>
+    </marker>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="120%">
+      <feDropShadow dx="0" dy="1.5" stdDeviation="2" flood-color="#0f172a" flood-opacity="0.08"/>
+    </filter>
+    <style>
+      .title { font-size: 22px; font-weight: 700; fill: #0f172a; }
+      .sub { font-size: 13px; fill: #64748b; }
+      .h { font-size: 15px; font-weight: 700; fill: #0f172a; }
+      .tag { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; }
+      .t { font-size: 13px; fill: #334155; }
+      .m { font-size: 12px; fill: #64748b; }
+      .mono { font-family: 'JetBrains Mono', Consolas, 'SF Mono', monospace; font-size: 12px; fill: #0f172a; }
+      .chip { fill: #ffffff; stroke: #cbd5e1; stroke-width: 1; }
+      .line { stroke: #475569; stroke-width: 1.6; fill: none; }
+    </style>
+  </defs>
+
+  <!-- canvas -->
+  <rect x="0" y="0" width="1200" height="900" rx="18" fill="#ffffff"/>
+  <rect x="0.5" y="0.5" width="1199" height="899" rx="18" fill="none" stroke="#e2e8f0"/>
+
+  <text x="40" y="48" class="title">How TableTalk answers a question</text>
+  <text x="40" y="70" class="sub">Cheap first, smart when needed: every rung returns the same shape — answer, SQL, rows, and which tier produced it.</text>
+
+  <!-- ============ LEFT: the escalation ladder ============ -->
+
+  <!-- question -->
+  <rect x="40" y="96" width="210" height="44" rx="22" fill="#0f172a"/>
+  <text x="145" y="123" text-anchor="middle" font-size="14" font-weight="600" fill="#ffffff">Question in plain English</text>
+
+  <!-- guardrail -->
+  <line x1="250" y1="118" x2="300" y2="118" class="line" marker-end="url(#arr)"/>
+  <rect x="302" y="96" width="388" height="44" rx="10" fill="#fef2f2" stroke="#fecaca"/>
+  <text x="318" y="115" class="h" font-size="13" fill="#991b1b">Input guardrail</text>
+  <text x="318" y="131" class="m">regex, no LLM — prompt injection is refused before retrieval</text>
+
+  <line x1="145" y1="140" x2="145" y2="168" class="line" marker-end="url(#arr)"/>
+
+  <!-- RUNG 1 -->
+  <rect x="40" y="170" width="650" height="150" rx="14" fill="#f0fdf4" stroke="#bbf7d0" filter="url(#shadow)"/>
+  <rect x="56" y="184" width="64" height="20" rx="10" fill="#16a34a"/>
+  <text x="88" y="198" text-anchor="middle" class="tag" fill="#ffffff">RUNG 1</text>
+  <text x="132" y="199" class="h">Fixed RAG pipeline</text>
+  <text x="674" y="199" text-anchor="end" class="m">effort: minimal · 2 LLM calls</text>
+
+  <rect x="60" y="222" width="130" height="48" rx="9" class="chip"/>
+  <text x="125" y="243" text-anchor="middle" class="mono" font-weight="700">retrieve</text>
+  <text x="125" y="259" text-anchor="middle" class="m">RAG context</text>
+  <line x1="190" y1="246" x2="218" y2="246" class="line" marker-end="url(#arr)"/>
+  <rect x="220" y="222" width="130" height="48" rx="9" class="chip"/>
+  <text x="285" y="243" text-anchor="middle" class="mono" font-weight="700">write_sql</text>
+  <text x="285" y="259" text-anchor="middle" class="m">structured output</text>
+  <line x1="350" y1="246" x2="378" y2="246" class="line" marker-end="url(#arr)"/>
+  <rect x="380" y="222" width="130" height="48" rx="9" class="chip"/>
+  <text x="445" y="243" text-anchor="middle" class="mono" font-weight="700">execute</text>
+  <text x="445" y="259" text-anchor="middle" class="m">read-only</text>
+  <line x1="510" y1="246" x2="538" y2="246" class="line" marker-end="url(#arr)"/>
+  <rect x="540" y="222" width="130" height="48" rx="9" class="chip"/>
+  <text x="605" y="243" text-anchor="middle" class="mono" font-weight="700">answer</text>
+  <text x="605" y="259" text-anchor="middle" class="m">grounded in rows</text>
+
+  <path d="M445,270 C445,302 285,302 285,274" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="5 4" fill="none" marker-end="url(#arrRed)"/>
+  <text x="365" y="308" text-anchor="middle" font-size="11.5" fill="#dc2626">SQL error → self-repair (≤ 2 fixes)</text>
+
+  <!-- decision 1 -->
+  <line x1="365" y1="320" x2="365" y2="344" class="line" marker-end="url(#arr)"/>
+  <rect x="190" y="346" width="350" height="36" rx="18" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+  <text x="365" y="369" text-anchor="middle" class="t"><tspan font-weight="700" fill="#0f172a">should_escalate?</tspan>  error · 0 rows · failed self-check</text>
+  <line x1="540" y1="364" x2="718" y2="364" stroke="#16a34a" stroke-width="1.6" marker-end="url(#arrGreen)"/>
+  <text x="628" y="356" text-anchor="middle" font-size="11.5" font-weight="600" fill="#16a34a">no → done</text>
+  <line x1="365" y1="382" x2="365" y2="406" class="line" marker-end="url(#arr)"/>
+  <text x="375" y="399" font-size="11.5" font-weight="600" fill="#b45309">yes</text>
+
+  <!-- RUNG 2 -->
+  <rect x="40" y="408" width="650" height="84" rx="14" fill="#fffbeb" stroke="#fde68a" filter="url(#shadow)"/>
+  <rect x="56" y="422" width="64" height="20" rx="10" fill="#d97706"/>
+  <text x="88" y="436" text-anchor="middle" class="tag" fill="#ffffff">RUNG 2</text>
+  <text x="132" y="437" class="h">Same pipeline, told what went wrong</text>
+  <text x="674" y="437" text-anchor="end" class="m">effort: high</text>
+  <text x="56" y="468" class="t">The first attempt's SQL and failure reason go into the prompt as a</text>
+  <text x="56" y="484" class="t"><tspan class="mono">retry_note</tspan>; most wrong guesses are fixed here at a fraction of agent cost.</text>
+
+  <!-- decision 2 -->
+  <line x1="365" y1="492" x2="365" y2="514" class="line" marker-end="url(#arr)"/>
+  <rect x="190" y="516" width="350" height="36" rx="18" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+  <text x="365" y="539" text-anchor="middle" class="t"><tspan font-weight="700" fill="#0f172a">still unreliable?</tspan>  same checks</text>
+  <line x1="540" y1="534" x2="718" y2="534" stroke="#16a34a" stroke-width="1.6" marker-end="url(#arrGreen)"/>
+  <text x="628" y="526" text-anchor="middle" font-size="11.5" font-weight="600" fill="#16a34a">no → done</text>
+  <line x1="365" y1="552" x2="365" y2="576" class="line" marker-end="url(#arr)"/>
+  <text x="375" y="569" font-size="11.5" font-weight="600" fill="#6d28d9">yes</text>
+
+  <!-- RUNG 3 -->
+  <rect x="40" y="578" width="650" height="190" rx="14" fill="#f5f3ff" stroke="#ddd6fe" filter="url(#shadow)"/>
+  <rect x="56" y="592" width="64" height="20" rx="10" fill="#7c3aed"/>
+  <text x="88" y="606" text-anchor="middle" class="tag" fill="#ffffff">RUNG 3</text>
+  <text x="132" y="607" class="h">Tool-calling agent (LangGraph)</text>
+  <text x="674" y="607" text-anchor="end" class="m">effort: medium · ≤ 6 tool rounds</text>
+
+  <rect x="60" y="630" width="120" height="48" rx="24" fill="#7c3aed"/>
+  <text x="120" y="659" text-anchor="middle" font-size="14" font-weight="700" fill="#ffffff">agent</text>
+  <path d="M180,644 C215,628 235,628 262,640" class="line" marker-end="url(#arr)"/>
+  <path d="M262,668 C235,682 215,682 180,666" class="line" marker-end="url(#arr)"/>
+  <text x="221" y="625" text-anchor="middle" class="m">tool calls</text>
+  <text x="221" y="696" text-anchor="middle" class="m">results</text>
+
+  <rect x="264" y="624" width="410" height="128" rx="10" fill="#ffffff" stroke="#ddd6fe"/>
+  <text x="280" y="645" class="m" font-weight="700" letter-spacing="0.06em">TOOLS</text>
+  <text x="280" y="667" class="mono">list_tables</text><text x="440" y="667" class="mono">search_schema</text>
+  <text x="280" y="687" class="mono">get_table_detail</text><text x="440" y="687" class="mono">get_fk_neighbors</text>
+  <text x="280" y="707" class="mono">get_record_history</text><text x="440" y="707" class="m">walks foreign keys for a full dossier</text>
+  <text x="280" y="727" class="mono">run_sql</text><text x="440" y="727" class="m">the only path to real data</text>
+  <text x="280" y="745" class="m">The agent explores the schema instead of guessing joins.</text>
+
+  <line x1="120" y1="678" x2="120" y2="716" class="line" marker-end="url(#arr)"/>
+  <rect x="60" y="718" width="120" height="34" rx="9" class="chip"/>
+  <text x="120" y="740" text-anchor="middle" class="mono" font-weight="700">finalize</text>
+
+  <!-- output -->
+
+  <!-- ============ RIGHT column ============ -->
+
+  <!-- Answer card -->
+  <rect x="720" y="336" width="440" height="226" rx="14" fill="#0f172a" filter="url(#shadow)"/>
+  <text x="742" y="366" font-size="15" font-weight="700" fill="#ffffff">Answer</text>
+  <text x="742" y="388" font-size="12.5" fill="#cbd5e1">Every rung returns the same keys, so every surface</text>
+  <text x="742" y="405" font-size="12.5" fill="#cbd5e1">renders any tier unchanged:</text>
+  <text x="742" y="432" class="mono" style="fill:#a5f3fc">answer · sql · result_columns · result_rows</text>
+  <text x="742" y="452" class="mono" style="fill:#a5f3fc">tier: fixed | retry | agent · error</text>
+  <line x1="742" y1="470" x2="1138" y2="470" stroke="#334155"/>
+  <text x="742" y="494" font-size="12.5" fill="#e2e8f0">Output guardrail: answers that drift into model</text>
+  <text x="742" y="511" font-size="12.5" fill="#e2e8f0">"training knowledge" are replaced with a refusal.</text>
+  <text x="742" y="540" font-size="12.5" fill="#94a3b8">Streamed as typed events: status · sql · table · tool_call · token · final</text>
+  <path d="M690,700 L706,700 L706,520 L718,520" stroke="#7c3aed" stroke-width="1.6" fill="none" marker-end="url(#arr)"/>
+
+  <!-- RAG feed -->
+  <rect x="720" y="96" width="440" height="220" rx="14" fill="#eff6ff" stroke="#bfdbfe" filter="url(#shadow)"/>
+  <rect x="736" y="110" width="88" height="20" rx="10" fill="#2563eb"/>
+  <text x="780" y="124" text-anchor="middle" class="tag" fill="#ffffff">RAG FEED</text>
+  <text x="836" y="125" class="h">Vector store (Chroma)</text>
+
+  <rect x="736" y="142" width="132" height="58" rx="9" class="chip"/>
+  <text x="802" y="164" text-anchor="middle" class="mono" font-weight="700">schema:&lt;table&gt;</text>
+  <text x="802" y="182" text-anchor="middle" class="m">introspected cards</text>
+  <text x="802" y="195" text-anchor="middle" class="m">+ real lookup values</text>
+  <rect x="876" y="142" width="132" height="58" rx="9" class="chip"/>
+  <text x="942" y="164" text-anchor="middle" class="mono" font-weight="700">example:&lt;hash&gt;</text>
+  <text x="942" y="182" text-anchor="middle" class="m">question → SQL pairs</text>
+  <text x="942" y="195" text-anchor="middle" class="m">human-first ranking</text>
+  <rect x="1016" y="142" width="128" height="58" rx="9" class="chip"/>
+  <text x="1080" y="164" text-anchor="middle" class="mono" font-weight="700">note:&lt;hash&gt;</text>
+  <text x="1080" y="182" text-anchor="middle" class="m">business rules</text>
+  <text x="1080" y="195" text-anchor="middle" class="m">&amp; definitions</text>
+
+  <text x="736" y="226" class="m" font-weight="700" letter-spacing="0.06em">RETRIEVAL</text>
+  <text x="736" y="246" class="t">top-k × 3 similarity → <tspan font-weight="700">cross-encoder rerank</tspan> (local ONNX)</text>
+  <text x="736" y="265" class="t">→ + foreign-key neighbor cards → table list</text>
+  <text x="736" y="284" class="t">→ one context block for <tspan class="mono">write_sql</tspan></text>
+  <text x="736" y="303" class="m">Durable: every edit writes JSON + Chroma, so rebuilds never lose data.</text>
+
+  <path d="M720,236 L700,236 L700,214 L125,214 L125,220" stroke="#2563eb" stroke-width="1.6" stroke-dasharray="5 4" fill="none" marker-end="url(#arrBlue)"/>
+
+  <!-- Read-only guarantee -->
+  <rect x="720" y="580" width="440" height="110" rx="14" fill="#f0fdfa" stroke="#99f6e4" filter="url(#shadow)"/>
+  <rect x="736" y="594" width="104" height="20" rx="10" fill="#0f766e"/>
+  <text x="788" y="608" text-anchor="middle" class="tag" fill="#ffffff">READ-ONLY</text>
+  <text x="852" y="609" class="h">Two independent layers</text>
+  <text x="736" y="636" class="t">1. <tspan font-weight="700">sqlglot AST check</tspan>: exactly one SELECT / UNION / CTE</text>
+  <text x="736" y="656" class="t">2. <tspan font-weight="700">read-only connection</tspan>: SQLite <tspan class="mono">mode=ro</tspan> or a read-only login</text>
+  <text x="736" y="676" class="m">Results capped at 50 rows. A bug in one layer cannot write data.</text>
+
+  <!-- DB -->
+  <g transform="translate(736,708)">
+    <ellipse cx="34" cy="10" rx="34" ry="10" fill="#e2e8f0" stroke="#94a3b8"/>
+    <path d="M0,10 L0,48 A34,10 0 0 0 68,48 L68,10" fill="#e2e8f0" stroke="#94a3b8"/>
+    <ellipse cx="34" cy="10" rx="34" ry="10" fill="#f1f5f9" stroke="#94a3b8"/>
+  </g>
+  <text x="820" y="726" class="h" font-size="14">Your database, via SQLAlchemy</text>
+  <text x="820" y="745" class="t">SQLite · PostgreSQL · MySQL · SQL Server · Snowflake</text>
+  <text x="820" y="763" class="m">Dialect-aware prompts and validation.</text>
+
+  <!-- ============ bottom: surfaces + learning loop ============ -->
+  <rect x="40" y="792" width="1120" height="84" rx="14" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="60" y="820" class="m" font-weight="700" letter-spacing="0.06em">SURFACES — thin wrappers, same engine</text>
+  <g font-size="13" font-weight="600" fill="#0f172a">
+    <rect x="60" y="832" width="150" height="30" rx="15" class="chip"/><text x="135" y="852" text-anchor="middle">Chainlit chat UI</text>
+    <rect x="220" y="832" width="150" height="30" rx="15" class="chip"/><text x="295" y="852" text-anchor="middle">REST + SSE stream</text>
+    <rect x="380" y="832" width="110" height="30" rx="15" class="chip"/><text x="435" y="852" text-anchor="middle">CLI + eval</text>
+    <rect x="500" y="832" width="170" height="30" rx="15" class="chip"/><text x="585" y="852" text-anchor="middle">Feed editor (Vue)</text>
+  </g>
+  <text x="720" y="822" class="h" font-size="14" fill="#15803d">Learning loop</text>
+  <text x="720" y="843" class="t">👍 "Save as example" turns a confirmed answer into a new</text>
+  <text x="720" y="862" class="t">retrieved example. Optional auto-learn captures reliable runs.</text>
+</svg>

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 152 32" role="img" aria-label="TableTalk">
+  <path d="M8 3 H24 Q30 3 30 9 V15 Q30 21 24 21 H16 L9 28 V21 Q2 21 2 15 V9 Q2 3 8 3 Z" fill="#2a78d6"/>
+  <g stroke="#fcfcfb" stroke-width="1.6" stroke-linecap="round">
+    <line x1="6" y1="9.5" x2="26" y2="9.5"/>
+    <line x1="6" y1="14.5" x2="26" y2="14.5"/>
+    <line x1="12.5" y1="6" x2="12.5" y2="18"/>
+    <line x1="19.5" y1="6" x2="19.5" y2="18"/>
+  </g>
+  <text x="36" y="22" font-family='system-ui,-apple-system,"Segoe UI",sans-serif' font-size="17" font-weight="700" fill="#0b0b0b">Table<tspan fill="#2a78d6">Talk</tspan></text>
+</svg>

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="TableTalk">
+  <path d="M8 2 H24 Q31 2 31 9 V16 Q31 23 24 23 H15 L7 30 V23 Q1 23 1 16 V9 Q1 2 8 2 Z" fill="#2a78d6"/>
+  <g stroke="#fcfcfb" stroke-width="2" stroke-linecap="round">
+    <line x1="5" y1="9.5" x2="27" y2="9.5"/>
+    <line x1="5" y1="15.5" x2="27" y2="15.5"/>
+    <line x1="12" y1="5" x2="12" y2="20"/>
+    <line x1="20" y1="5" x2="20" y2="20"/>
+  </g>
+</svg>
